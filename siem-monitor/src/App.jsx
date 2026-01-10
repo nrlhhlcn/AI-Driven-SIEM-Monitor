@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import { Bell, Search, User } from 'lucide-react';
-import Dashboard from './components/dashboard/Dashboard';
 
+import Dashboard from './components/dashboard/Dashboard';
+import LiveLogs from './components/logs/LiveLogs';
+import ThreatMap from './components/threats/ThreatMap';
+import NetworkTraffic from './components/dashboard/NetworkTraffic';
+import Settings from './components/dashboard/Settings';
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -45,14 +49,22 @@ function App() {
           </div>
         </header>
 
-        {/* İÇERİK ALANI (Şimdilik Boş) */}
-       {/* İÇERİK ALANI */}
-       <div className="flex-1 p-8 overflow-y-auto">
-          {activeTab === 'dashboard' ? (
-            <Dashboard />
-          ) : (
-            <div className="border-2 border-dashed border-siem-border rounded-2xl h-full flex items-center justify-center text-gray-500">
-              {activeTab.toUpperCase()} MODÜLÜ TASARLANACAK
+        {/* İÇERİK ALANI */}
+        <div className="flex-1 p-8 overflow-y-auto">
+          {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'logs' && <LiveLogs />}
+          {activeTab === 'threats' && <ThreatMap />}
+          {activeTab === 'network' && <NetworkTraffic />}
+          {activeTab === 'settings' && <Settings />}
+          
+          {/* Diğer sekmeler için geçici yer tutucu */}
+          {activeTab !== 'dashboard' &&
+            activeTab !== 'logs' &&
+            activeTab !== 'threats' &&
+            activeTab !== 'network' &&
+            activeTab !== 'settings' && (
+            <div className="border-2 border-dashed border-siem-border rounded-2xl h-full flex items-center justify-center text-gray-500 animate-pulse">
+              {activeTab.toUpperCase()} MODÜLÜ GELİŞTİRİLİYOR...
             </div>
           )}
         </div>
