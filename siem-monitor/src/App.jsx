@@ -7,6 +7,7 @@ import LiveLogs from './components/logs/LiveLogs';
 import ThreatMap from './components/threats/ThreatMap';
 import NetworkTraffic from './components/dashboard/NetworkTraffic';
 import Settings from './components/dashboard/Settings';
+import AlarmHistory from './components/alarms/AlarmHistory';
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -50,10 +51,11 @@ function App() {
         </header>
 
         {/* İÇERİK ALANI */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className={`flex-1 p-8 ${activeTab === 'logs' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'logs' && <LiveLogs />}
           {activeTab === 'threats' && <ThreatMap />}
+          {activeTab === 'alarms' && <AlarmHistory />}
           {activeTab === 'network' && <NetworkTraffic />}
           {activeTab === 'settings' && <Settings />}
           
@@ -61,6 +63,7 @@ function App() {
           {activeTab !== 'dashboard' &&
             activeTab !== 'logs' &&
             activeTab !== 'threats' &&
+            activeTab !== 'alarms' &&
             activeTab !== 'network' &&
             activeTab !== 'settings' && (
             <div className="border-2 border-dashed border-siem-border rounded-2xl h-full flex items-center justify-center text-gray-500 animate-pulse">

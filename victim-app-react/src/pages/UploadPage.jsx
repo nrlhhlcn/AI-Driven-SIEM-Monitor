@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
-import { logEvent } from '../services/siemLogger';
+import { logWebTraffic, logFileUpload } from '../services/firebaseService';
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
 
   useEffect(() => {
-    logEvent.webTraffic('/upload');
+    // Sayfa ziyareti logu - sadece bir kez çalışsın
+    const hasLogged = sessionStorage.getItem('uploadPageVisited');
+    if (!hasLogged) {
+      logWebTraffic('/upload').catch(() => {});
+      sessionStorage.setItem('uploadPageVisited', 'true');
+    }
   }, []);
 
   const handleFileChange = (e) => {
@@ -22,10 +27,10 @@ const UploadPage = () => {
       const hasSuspiciousExtension = suspiciousExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
       
       if (suspiciousTypes.includes(fileType) || hasSuspiciousExtension) {
-        logEvent.fileUpload(fileName, fileType);
+        logFileUpload(fileName, fileType).catch(() => {});
         setUploadStatus('warning');
       } else {
-        logEvent.fileUpload(fileName, fileType);
+        logFileUpload(fileName, fileType).catch(() => {});
         setUploadStatus('success');
       }
     }

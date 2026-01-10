@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { sendLogToSIEM, logEvent } from '../services/siemLogger';
+import { logWebTraffic, logApiRequest, logApiAbuse, logInvalidApiKey, logSensitiveApiAccess } from '../services/firebaseService';
 
 const ApiPage = () => {
   const [apiKey, setApiKey] = useState('');
@@ -9,7 +9,12 @@ const ApiPage = () => {
   const [requestCount, setRequestCount] = useState(0);
 
   useEffect(() => {
-    logEvent.webTraffic('/api');
+    // Sayfa ziyareti logu - sadece bir kez çalışsın
+    const hasLogged = sessionStorage.getItem('apiPageVisited');
+    if (!hasLogged) {
+      logWebTraffic('/api').catch(() => {});
+      sessionStorage.setItem('apiPageVisited', 'true');
+    }
   }, []);
 
   const handleApiRequest = async () => {
@@ -17,49 +22,25 @@ const ApiPage = () => {
     
     // API abuse tespiti
     if (requestCount > 10) {
-      sendLogToSIEM(
-        'API_ABUSE',
-        `API kötüye kullanımı tespit edildi: ${requestCount + 1} istek`,
-        'high',
-        'Web',
-        { endpoint, method, apiKey: apiKey ? '***' : 'none' }
-      );
+      await logApiAbuse(requestCount + 1, endpoint, method).catch(() => {});
       setResponse({ error: 'Rate limit aşıldı! Çok fazla istek gönderildi.' });
       return;
     }
 
     // Geçersiz API key kontrolü
     if (apiKey && apiKey !== 'valid-api-key-123') {
-      sendLogToSIEM(
-        'INVALID_API_KEY',
-        `Geçersiz API key kullanımı: ${apiKey.substring(0, 10)}...`,
-        'medium',
-        'Auth',
-        { endpoint, method }
-      );
+      await logInvalidApiKey(apiKey, endpoint, method).catch(() => {});
       setResponse({ error: 'Geçersiz API key!' });
       return;
     }
 
     // DELETE ve PUT metodları için özel kontrol
     if (method === 'DELETE' || method === 'PUT') {
-      sendLogToSIEM(
-        'SENSITIVE_API_ACCESS',
-        `Hassas API endpoint erişimi: ${method} ${endpoint}`,
-        'high',
-        'System',
-        { method, endpoint }
-      );
+      await logSensitiveApiAccess(method, endpoint).catch(() => {});
     }
 
     // Normal istek logu
-    sendLogToSIEM(
-      'API_REQUEST',
-      `API isteği: ${method} ${endpoint}`,
-      'info',
-      'Web',
-      { method, endpoint, apiKey: apiKey ? 'provided' : 'none' }
-    );
+    await logApiRequest(method, endpoint, apiKey, 'info').catch(() => {});
 
     // Simüle edilmiş API yanıtı
     setResponse({

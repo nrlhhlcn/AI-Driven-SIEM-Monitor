@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // SIEM Events - Herkes yazabilir, okuyabilir (Development için)
+    match /siem_events/{eventId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM Alarms
+    match /siem_alarms/{alarmId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM Threat Intelligence
+    match /siem_threat_intelligence/{threatId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM Network Traffic
+    match /siem_network_traffic/{trafficId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM System Metrics
+    match /siem_system_metrics/{metricId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM IP Blocks
+    match /siem_ip_blocks/{blockId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM User Stats - Kullanıcı giriş istatistikleri
+    match /siem_user_stats/{userId} {
+      allow read, write: if true;
+    }
+    
+    // SIEM Detection Rules - Tespit kuralları
+    match /siem_detection_rules/{ruleId} {
+      allow read, write: if true;
+    }
+    
+    // Diğer collection'lar için varsayılan kural
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

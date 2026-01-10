@@ -1,33 +1,35 @@
 import { useState, useEffect } from 'react';
-import { logEvent, sendLogToSIEM } from '../services/siemLogger';
+import { signOut } from 'firebase/auth';
+import { auth } from '../config/firebase';
+import { logWebTraffic, logUnauthorizedAccess, logLogoutEvent } from '../services/firebaseService';
 
 const AdminPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [unauthorizedAttempts, setUnauthorizedAttempts] = useState(0);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    // Sayfa ziyareti logu
-    logEvent.webTraffic('/admin');
+    // Sayfa ziyareti logu - sadece bir kez çalışsın
+    const hasLogged = sessionStorage.getItem('adminPageVisited');
+    if (!hasLogged) {
+      logWebTraffic('/admin').catch(() => {});
+      sessionStorage.setItem('adminPageVisited', 'true');
+    }
     
     // Eğer kullanıcı giriş yapmamışsa yetkisiz erişim logu
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const authStatus = sessionStorage.getItem('authenticated');
       if (authStatus !== 'true') {
         setUnauthorizedAttempts(prev => prev + 1);
-        logEvent.unauthorizedAccess('/admin');
-        
-        // 3 denemeden sonra kritik alarm
-        if (unauthorizedAttempts >= 2) {
-          sendLogToSIEM(
-            'UNAUTHORIZED_ACCESS',
-            'Kritik: Admin paneline yetkisiz erişim denemeleri',
-            'critical',
-            'System',
-            { attempts: unauthorizedAttempts + 1 }
-          );
+        // Sadece ilk yetkisiz erişimde log at
+        if (unauthorizedAttempts === 0) {
+          await logUnauthorizedAccess('/admin').catch(() => {});
         }
       } else {
         setIsAuthenticated(true);
+        // Kullanıcı email'ini al
+        const email = sessionStorage.getItem('userEmail') || auth.currentUser?.email || 'Kullanıcı';
+        setUserEmail(email);
       }
     };
 
@@ -63,15 +65,45 @@ const AdminPage = () => {
               <h1 className="text-3xl font-bold text-gray-800">Admin Paneli</h1>
               <p className="text-gray-600 mt-1">Sistem yönetim ve izleme</p>
             </div>
-            <button
-              onClick={() => {
-                sessionStorage.removeItem('authenticated');
-                window.location.href = '/';
-              }}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Çıkış Yap
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600 text-sm">
+                <i className="fas fa-user-circle mr-2 text-cyan-500"></i>
+                {userEmail || 'Kullanıcı'}
+              </span>
+              <button
+                onClick={async () => {
+                  const email = userEmail || sessionStorage.getItem('userEmail') || 'Bilinmeyen';
+                  
+                  // Çıkış logunu kaydet
+                  await logLogoutEvent(email).catch(() => {
+                    // Sessizce geç
+                  });
+                  
+                  try {
+                    await signOut(auth);
+                  } catch (error) {
+                    console.error('Çıkış hatası:', error);
+                  }
+                  
+                  // Session temizle
+                  sessionStorage.removeItem('authenticated');
+                  sessionStorage.removeItem('userEmail');
+                  sessionStorage.removeItem('userId');
+                  
+                  // SessionStorage'daki sayfa ziyareti loglarını da temizle (tekrar giriş yapıldığında log atılsın)
+                  sessionStorage.removeItem('loginPageVisited');
+                  sessionStorage.removeItem('adminPageVisited');
+                  sessionStorage.removeItem('apiPageVisited');
+                  sessionStorage.removeItem('uploadPageVisited');
+                  
+                  window.location.href = '/login';
+                }}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <i className="fas fa-sign-out-alt"></i>
+                Çıkış Yap
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

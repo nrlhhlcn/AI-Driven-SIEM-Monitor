@@ -38,7 +38,10 @@ export const sendLogToSIEM = async (type, title, severity, category = 'Web', add
     }
   } catch (error) {
     // Backend kapalıysa sessizce geç (site çalışmaya devam etsin)
-    console.warn('SIEM backend\'e bağlanılamadı:', error.message);
+    // Sadece development'ta göster, production'da sessiz kal
+    if (import.meta.env.DEV) {
+      // console.warn('SIEM backend\'e bağlanılamadı:', error.message);
+    }
   }
 };
 
