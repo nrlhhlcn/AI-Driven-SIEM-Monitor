@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Save, Bell, Shield, Server, Mail, Smartphone, 
-  Lock, RefreshCw, Database, Eye, EyeOff, Plus,
+  RefreshCw, Database, Plus,
   Trash2, Edit2, Check, X, AlertTriangle, Zap,
   Clock, Globe, Code, Activity, Loader2
 } from 'lucide-react';
-import AddUsers from '../admin/AddUsers';
 import { 
   subscribeToRules, 
   addDetectionRule, 
@@ -82,8 +81,6 @@ const DEFAULT_RULES = [
 ];
 
 const Settings = () => {
-  const [apiKey, setApiKey] = useState('sk_live_51M0...x4B2');
-  const [showKey, setShowKey] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rules, setRules] = useState([]);
   const [rulesLoading, setRulesLoading] = useState(true);
@@ -247,7 +244,7 @@ const Settings = () => {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Sistem Yapılandırması</h2>
-          <p className="text-gray-400 text-sm mt-1">SIEM kurallarını, bildirimleri ve API erişimlerini yönetin.</p>
+          <p className="text-gray-400 text-sm mt-1">SIEM kurallarını ve bildirimleri yönetin.</p>
         </div>
         <div className="flex items-center gap-3">
           {saveStatus && (
@@ -262,11 +259,6 @@ const Settings = () => {
             {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
         </div>
-      </div>
-
-      {/* KULLANICI EKLEME */}
-      <div className="mb-8">
-        <AddUsers />
       </div>
 
       {/* TESPİT KURALLARI YÖNETİMİ */}
@@ -449,7 +441,7 @@ const Settings = () => {
                             onChange={() => toggleRule(rule.id)}
                             className="sr-only peer" 
                           />
-                          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-siem-success"></div>
+                          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                         </label>
                       </div>
                     </div>
@@ -490,7 +482,7 @@ const Settings = () => {
 
         </div>
 
-        {/* SAĞ KOLON: SİSTEM & API */}
+        {/* SAĞ KOLON: SİSTEM */}
         <div className="space-y-6">
           
           {/* Sistem Durumu */}
@@ -529,39 +521,6 @@ const Settings = () => {
                    </div>
                 </div>
              </div>
-             
-             <button className="w-full mt-6 py-2 border border-siem-border rounded-lg text-sm text-gray-300 hover:bg-white/5 transition-colors">
-                Logları Temizle / Arşivle
-             </button>
-          </div>
-
-          {/* API Erişimi */}
-          <div className="bg-siem-card border border-siem-border rounded-xl p-6">
-             <div className="flex items-center gap-2 mb-4 text-white font-semibold">
-                <Lock size={20} className="text-yellow-500" />
-                API Entegrasyonu
-             </div>
-             <p className="text-xs text-gray-400 mb-4">
-                Agent'ların (Ajanların) log göndermek için kullandığı gizli anahtar.
-             </p>
-             
-             <div className="relative">
-                <input 
-                  type={showKey ? "text" : "password"} 
-                  value={apiKey} 
-                  readOnly
-                  className="w-full bg-siem-bg border border-siem-border rounded-lg pl-3 pr-10 py-2 text-sm text-gray-300 font-mono"
-                />
-                <button 
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-2 top-2 text-gray-500 hover:text-white"
-                >
-                  {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-             </div>
-             <button className="w-full mt-3 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-lg text-sm hover:bg-yellow-500/20 transition-colors">
-                Yeni Anahtar Oluştur
-             </button>
           </div>
 
         </div>

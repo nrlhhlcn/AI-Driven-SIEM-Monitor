@@ -41,7 +41,41 @@ const Dashboard = () => {
     notifications: [],
     userSecurity: []
   });
-  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+  // localStorage'dan dismiss edilen alert'leri yükle
+  const loadDismissedAlerts = () => {
+    try {
+      const stored = localStorage.getItem('siem_dismissed_alerts');
+      if (!stored) return new Set();
+      
+      const parsed = JSON.parse(stored);
+      // Sadece son 200 alert ID'sini tut (localStorage boyutunu kontrol et)
+      const ids = Array.isArray(parsed) ? parsed.slice(-200) : [];
+      return new Set(ids);
+    } catch {
+      return new Set();
+    }
+  };
+
+  // localStorage'a dismiss edilen alert'leri kaydet
+  const saveDismissedAlerts = (alerts) => {
+    try {
+      // Sadece son 200 alert ID'sini kaydet
+      const idsArray = Array.from(alerts).slice(-200);
+      localStorage.setItem('siem_dismissed_alerts', JSON.stringify(idsArray));
+    } catch (error) {
+      console.warn('localStorage kayıt hatası:', error);
+      // Eğer localStorage doluysa, eski kayıtları temizle
+      try {
+        const idsArray = Array.from(alerts).slice(-50);
+        localStorage.setItem('siem_dismissed_alerts', JSON.stringify(idsArray));
+      } catch {
+        // localStorage tamamen doluysa, temizle
+        localStorage.removeItem('siem_dismissed_alerts');
+      }
+    }
+  };
+
+  const [dismissedAlerts, setDismissedAlerts] = useState(loadDismissedAlerts());
   const [dismissedRecommendations, setDismissedRecommendations] = useState(new Set());
   const [detectionRules, setDetectionRules] = useState([]);
 
@@ -181,9 +215,20 @@ const Dashboard = () => {
     aiRecommendations.notifications.length +
     aiRecommendations.userSecurity.length;
 
-  // Alert'i kapat
-  const dismissAlert = (type, index) => {
-    setDismissedAlerts(prev => new Set([...prev, `${type}-${index}`]));
+  // Alert'i kapat (localStorage'a kaydet)
+  const dismissAlert = (type, index, alertData) => {
+    // Alert'in benzersiz ID'sini oluştur (içerik bazlı - AlertCard ile aynı mantık)
+    const timeStr = alertData?.time 
+      ? (typeof alertData.time === 'string' ? alertData.time : alertData.time.toLocaleTimeString('tr-TR'))
+      : Date.now();
+    
+    const alertKey = `${type}-${alertData?.ip || 'unknown'}-${alertData?.username || 'unknown'}-${timeStr}`;
+    
+    setDismissedAlerts(prev => {
+      const newSet = new Set([...prev, alertKey]);
+      saveDismissedAlerts(newSet);
+      return newSet;
+    });
   };
 
   // Öneriyi kapat
@@ -193,8 +238,10 @@ const Dashboard = () => {
 
   // Alert kartı komponenti
   const AlertCard = ({ alert, type, index, icon: Icon, color, bgColor }) => {
-    const key = `${type}-${index}`;
-    if (dismissedAlerts.has(key)) return null;
+    // Benzersiz key oluştur (alert içeriğine göre)
+    const alertKey = `${type}-${alert.ip || 'unknown'}-${alert.username || 'unknown'}-${alert.time ? (typeof alert.time === 'string' ? alert.time : alert.time.toLocaleTimeString('tr-TR')) : Date.now()}`;
+    
+    if (dismissedAlerts.has(alertKey)) return null;
 
     return (
       <div className={`${bgColor} border-l-4 ${color} rounded-xl p-4 backdrop-blur-sm animate-in slide-in-from-top duration-300`}>
@@ -207,10 +254,10 @@ const Dashboard = () => {
             <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
               {alert.ip && <span>IP: {alert.ip}</span>}
               {alert.username && <span>• Kullanıcı: {alert.username}</span>}
-              {alert.time && <span>• {alert.time.toLocaleTimeString('tr-TR')}</span>}
+              {alert.time && <span>• {typeof alert.time === 'string' ? alert.time : alert.time.toLocaleTimeString('tr-TR')}</span>}
             </div>
           </div>
-          <button onClick={() => dismissAlert(type, index)} className="p-1 hover:bg-white/10 rounded">
+          <button onClick={() => dismissAlert(type, index, alert)} className="p-1 hover:bg-white/10 rounded">
             <X size={16} className="text-gray-400" />
           </button>
         </div>

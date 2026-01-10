@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShieldAlert, Activity, FileText, Settings, Ghost, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, FileText, Settings, Ghost, AlertTriangle } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   
@@ -9,7 +9,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'threats', icon: ShieldAlert, label: 'Tehdit Analizi' },
     { id: 'logs', icon: FileText, label: 'Canlı Loglar' },
     { id: 'alarms', icon: AlertTriangle, label: 'Alarm Geçmişi' },
-    { id: 'network', icon: Activity, label: 'Ağ Trafiği' },
     { id: 'settings', icon: Settings, label: 'Sistem Ayarları' },
   ];
 

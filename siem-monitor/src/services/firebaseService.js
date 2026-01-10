@@ -10,7 +10,9 @@ import {
   limit,
   where,
   onSnapshot,
-  Timestamp 
+  Timestamp,
+  deleteDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -81,6 +83,47 @@ export const subscribeToEvents = (callback, count = 50) => {
     }));
     callback(events);
   });
+};
+
+/**
+ * Tüm eventleri sil (Firebase'den)
+ */
+export const deleteAllEvents = async () => {
+  try {
+    // Tüm eventleri getir
+    const q = query(collection(db, COLLECTIONS.EVENTS));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      console.log('Silinecek event yok');
+      return true;
+    }
+    
+    // Batch delete (500'e kadar - Firestore limiti)
+    const batch = writeBatch(db);
+    let count = 0;
+    const maxBatchSize = 500;
+    
+    querySnapshot.docs.forEach((document) => {
+      if (count < maxBatchSize) {
+        batch.delete(doc(db, COLLECTIONS.EVENTS, document.id));
+        count++;
+      }
+    });
+    
+    await batch.commit();
+    console.log(`✅ ${count} event silindi`);
+    
+    // Eğer 500'den fazla event varsa, tekrar çağır
+    if (querySnapshot.docs.length > maxBatchSize) {
+      return await deleteAllEvents();
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Event silme hatası:', error);
+    return false;
+  }
 };
 
 /**

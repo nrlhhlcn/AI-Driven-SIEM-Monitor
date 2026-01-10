@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import { Bell, Search, User } from 'lucide-react';
 
 import Dashboard from './components/dashboard/Dashboard';
 import LiveLogs from './components/logs/LiveLogs';
 import ThreatMap from './components/threats/ThreatMap';
-import NetworkTraffic from './components/dashboard/NetworkTraffic';
 import Settings from './components/dashboard/Settings';
 import AlarmHistory from './components/alarms/AlarmHistory';
+import AlarmModal from './components/alarms/AlarmModal';
+
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Alarm History sayfasına yönlendirme için event listener
+  useEffect(() => {
+    const handleNavigateToAlarms = () => {
+      setActiveTab('alarms');
+    };
+    
+    window.addEventListener('navigateToAlarms', handleNavigateToAlarms);
+    return () => window.removeEventListener('navigateToAlarms', handleNavigateToAlarms);
+  }, []);
 
   return (
     <div className="flex h-screen bg-siem-bg text-white">
@@ -56,7 +67,6 @@ function App() {
           {activeTab === 'logs' && <LiveLogs />}
           {activeTab === 'threats' && <ThreatMap />}
           {activeTab === 'alarms' && <AlarmHistory />}
-          {activeTab === 'network' && <NetworkTraffic />}
           {activeTab === 'settings' && <Settings />}
           
           {/* Diğer sekmeler için geçici yer tutucu */}
@@ -64,7 +74,6 @@ function App() {
             activeTab !== 'logs' &&
             activeTab !== 'threats' &&
             activeTab !== 'alarms' &&
-            activeTab !== 'network' &&
             activeTab !== 'settings' && (
             <div className="border-2 border-dashed border-siem-border rounded-2xl h-full flex items-center justify-center text-gray-500 animate-pulse">
               {activeTab.toUpperCase()} MODÜLÜ GELİŞTİRİLİYOR...
@@ -72,6 +81,9 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Global Alarm Modal - Her sayfada görünür */}
+      <AlarmModal />
     </div>
   );
 }
