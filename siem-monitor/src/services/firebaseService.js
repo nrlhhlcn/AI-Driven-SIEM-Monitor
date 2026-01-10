@@ -240,6 +240,11 @@ export const subscribeToUserStats = (callback) => {
  * @param {Object} config - Kural konfigürasyonu { threshold: number, timeWindow: number, timeUnit: string }
  */
 export const detectBruteForce = (events, config = {}) => {
+  // Null/undefined kontrolü
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   // Varsayılan değerler (Firebase'den gelmezse)
   const threshold = config.threshold || 5;
   const timeWindow = config.timeWindow || 3;
@@ -384,6 +389,10 @@ const getEventDate = (event) => {
  * @param {Object} config - { timeWindow: number (saat başlangıcı) }
  */
 export const detectAbnormalLoginTime = (events, config = {}) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const abnormalLogins = [];
   const endHour = config.timeWindow || 6; // Varsayılan: 00:00 - 06:00 arası şüpheli
   
@@ -414,6 +423,10 @@ export const detectAbnormalLoginTime = (events, config = {}) => {
  * SQL Injection Pattern Tespiti
  */
 export const detectSQLInjection = (events) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const sqlPatterns = [
     /('|"|;|--|\bOR\b|\bAND\b|\bUNION\b|\bSELECT\b|\bDROP\b|\bDELETE\b|\bINSERT\b|\bUPDATE\b)/gi,
     /(\b1\s*=\s*1\b|\b1\s*=\s*'1'\b)/gi,
@@ -452,6 +465,10 @@ export const detectSQLInjection = (events) => {
  * @param {Object} config - { threshold: number (kat sayısı), timeWindow: number (dakika) }
  */
 export const detectTrafficSpike = (events, config = {}) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const multiplierThreshold = config.threshold || 3; // Varsayılan: 3x artış
   const timeWindow = config.timeWindow || 5; // Varsayılan: 5 dakikalık pencere
   
@@ -502,6 +519,10 @@ export const detectTrafficSpike = (events, config = {}) => {
  * @param {Object} config - { threshold: number (IP sayısı), timeWindow: number (dakika) }
  */
 export const detectGeoAnomaly = (events, config = {}) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const ipThreshold = config.threshold || 2; // Varsayılan: 2+ farklı IP
   const timeWindow = config.timeWindow || 10; // Varsayılan: 10 dakika
   
@@ -559,6 +580,10 @@ export const detectGeoAnomaly = (events, config = {}) => {
  * @param {Object} config - { threshold: number, timeWindow: number, timeUnit: string }
  */
 export const detectAPIAbuse = (events, config = {}) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const threshold = config.threshold || 100;
   const timeWindow = config.timeWindow || 1;
   const timeUnit = config.timeUnit || 'minutes';
@@ -624,6 +649,18 @@ export const detectAPIAbuse = (events, config = {}) => {
  * @param {Array} rules - Firebase'den gelen tespit kuralları
  */
 export const detectAllAnomalies = (events, rules = []) => {
+  // Null/undefined kontrolü
+  if (!events || !Array.isArray(events)) {
+    return {
+      bruteForce: [],
+      abnormalLoginTime: [],
+      sqlInjection: [],
+      trafficSpike: [],
+      geoAnomaly: [],
+      apiAbuse: [],
+    };
+  }
+  
   // Kurallardan konfigürasyonları çıkar
   const bruteForceRule = rules.find(r => r.id === 'brute-force' && r.isActive);
   const abnormalLoginRule = rules.find(r => r.id === 'abnormal-login-time' && r.isActive);
@@ -651,6 +688,10 @@ export const detectAllAnomalies = (events, rules = []) => {
  * Geçmiş verilere bakarak optimal eşik değeri önerir
  */
 export const generateAIThresholdRecommendation = (events) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const recommendations = [];
   
   // Son 24 saatteki eventleri analiz et
@@ -696,6 +737,10 @@ export const generateAIThresholdRecommendation = (events) => {
  * AI IP Engelleme Önerisi
  */
 export const generateAIBlockRecommendation = (events) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const recommendations = [];
   const now = Date.now();
   const last24Hours = now - (24 * 60 * 60 * 1000);
@@ -739,6 +784,10 @@ export const generateAIBlockRecommendation = (events) => {
  * AI Bildirim Azaltma Önerisi
  */
 export const generateAINotificationRecommendation = (events) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const recommendations = [];
   const now = Date.now();
   const lastHour = now - (60 * 60 * 1000);
@@ -778,6 +827,10 @@ export const generateAINotificationRecommendation = (events) => {
  * AI Kullanıcı Güvenlik Önerisi
  */
 export const generateAIUserSecurityRecommendation = (events) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
   const recommendations = [];
   const now = Date.now();
   const last7Days = now - (7 * 24 * 60 * 60 * 1000);
