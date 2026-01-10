@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+body {
+  background-color: #0a0e17; /* siem-bg */
+  color: #e5e7eb;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden; /* Uygulama hissi için kaydırmayı kısıtlıyoruz */
+}
