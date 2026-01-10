@@ -3,6 +3,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { logLoginEvent, saveEventToFirebase } from '../services/firebaseService';
 import { getCountryFromIP } from '../services/geolocationService';
+import { addUsersToFirebase } from '../scripts/addUsers';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -47,6 +48,11 @@ const LoginPage = () => {
     const savedCountry = localStorage.getItem('testCountry');
     if (savedCountry) {
       setSelectedTestCountry(savedCountry);
+    }
+
+    // Browser console'dan kullanıcı ekleme fonksiyonunu erişilebilir yap
+    if (typeof window !== 'undefined') {
+      window.addUsersToFirebase = addUsersToFirebase;
     }
   }, []);
   
@@ -195,9 +201,9 @@ const LoginPage = () => {
             <i className="fas fa-university text-white text-3xl"></i>
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-2">
-            CorpBank
+            Demo Bakırçay Üniversitesi
           </h1>
-          <p className="text-gray-600 text-sm font-medium">Personel Giriş Portalı</p>
+          <p className="text-gray-600 text-sm font-medium">Öğrenci & Personel Giriş Portalı</p>
           <div className="flex items-center justify-center gap-2 mt-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs text-gray-500">Güvenli Bağlantı Aktif</span>
@@ -233,7 +239,7 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 pl-11 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-500 transition-all duration-200 text-gray-800 placeholder-gray-400"
-              placeholder="ornek@corpbank.com"
+              placeholder="ornek@bakircay.edu.tr"
               autoComplete="off"
             />
           </div>
@@ -279,8 +285,8 @@ const LoginPage = () => {
           <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
             <p className="font-semibold mb-2 text-gray-700">Test Kullanıcıları:</p>
             <ul className="space-y-1 text-left">
-              <li>• admin@corpbank.com / Admin123!</li>
-              <li>• analyst@corpbank.com / Analyst123!</li>
+              <li>• admin@bakircay.edu.tr / Admin123!</li>
+              <li>• ogrenci@bakircay.edu.tr / Ogrenci123!</li>
             </ul>
             <p className="font-semibold mb-2 mt-3 text-red-600">🔴 SQL Injection Test:</p>
             <ul className="space-y-1 text-left text-red-500">

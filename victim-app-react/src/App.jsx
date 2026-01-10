@@ -3,6 +3,9 @@ import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import UploadPage from './pages/UploadPage';
 import ApiPage from './pages/ApiPage';
+import SchedulePage from './pages/SchedulePage';
+import GradesPage from './pages/GradesPage';
+import CalendarPage from './pages/CalendarPage';
 import { logWebTraffic } from './services/firebaseService';
 
 function App() {
@@ -33,6 +36,15 @@ function App() {
     } else if (path === '/api' && authStatus === 'true') {
       setCurrentPage('api');
       setIsAuthenticated(true);
+    } else if (path === '/schedule' && authStatus === 'true') {
+      setCurrentPage('schedule');
+      setIsAuthenticated(true);
+    } else if (path === '/grades' && authStatus === 'true') {
+      setCurrentPage('grades');
+      setIsAuthenticated(true);
+    } else if (path === '/calendar' && authStatus === 'true') {
+      setCurrentPage('calendar');
+      setIsAuthenticated(true);
     } else if (path === '/login') {
       setCurrentPage('login');
       setIsAuthenticated(false);
@@ -58,6 +70,9 @@ function App() {
       {currentPage === 'admin' && <AdminPage />}
       {currentPage === 'upload' && <UploadPage />}
       {currentPage === 'api' && <ApiPage />}
+      {currentPage === 'schedule' && <SchedulePage />}
+      {currentPage === 'grades' && <GradesPage />}
+      {currentPage === 'calendar' && <CalendarPage />}
     </>
   );
 }

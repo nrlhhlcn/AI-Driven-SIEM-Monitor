@@ -45,12 +45,14 @@ const ApiPage = () => {
     // Simüle edilmiş API yanıtı
     setResponse({
       success: true,
-      data: {
-        message: 'API isteği başarılı',
-        timestamp: new Date().toISOString(),
-        endpoint,
-        method
-      }
+        data: {
+          message: 'API isteği başarılı',
+          timestamp: new Date().toISOString(),
+          endpoint,
+          method,
+          universite: 'Demo Bakırçay Üniversitesi',
+          sistem: 'Öğrenci Bilgi Sistemi'
+        }
     });
   };
 
@@ -60,8 +62,8 @@ const ApiPage = () => {
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
             <i className="fas fa-code text-5xl text-cyan-500 mb-4"></i>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">API Test Konsolu</h1>
-            <p className="text-gray-600">API endpoint'lerini test edin</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Öğrenci Bilgi Sistemi API</h1>
+            <p className="text-gray-600">Demo Bakırçay Üniversitesi - API Test Konsolu</p>
           </div>
 
           <div className="space-y-6">
@@ -88,10 +90,10 @@ const ApiPage = () => {
                   onChange={(e) => setEndpoint(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-cyan-500 transition-all duration-200 text-gray-800"
                 >
-                  <option value="/api/users">/api/users</option>
-                  <option value="/api/admin">/api/admin</option>
-                  <option value="/api/data">/api/data</option>
-                  <option value="/api/config">/api/config</option>
+                  <option value="/api/users">/api/ogrenci-bilgileri</option>
+                  <option value="/api/admin">/api/ders-kayit</option>
+                  <option value="/api/data">/api/not-sorgula</option>
+                  <option value="/api/config">/api/akademik-takvim</option>
                 </select>
               </div>
 

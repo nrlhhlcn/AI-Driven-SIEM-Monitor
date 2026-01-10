@@ -49,11 +49,30 @@ const UploadPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
       <div className="max-w-4xl mx-auto">
+        {/* Navigasyon Menüsü */}
+        <div className="mb-4 flex flex-wrap gap-2 justify-center">
+          <a href="/admin" className="px-4 py-2 bg-white/90 rounded-lg text-gray-700 hover:bg-cyan-500 hover:text-white transition-all text-sm font-medium">
+            <i className="fas fa-home mr-2"></i>Ana Sayfa
+          </a>
+          <a href="/schedule" className="px-4 py-2 bg-white/90 rounded-lg text-gray-700 hover:bg-cyan-500 hover:text-white transition-all text-sm font-medium">
+            <i className="fas fa-calendar-alt mr-2"></i>Ders Programı
+          </a>
+          <a href="/grades" className="px-4 py-2 bg-white/90 rounded-lg text-gray-700 hover:bg-cyan-500 hover:text-white transition-all text-sm font-medium">
+            <i className="fas fa-graduation-cap mr-2"></i>Notlarım
+          </a>
+          <a href="/calendar" className="px-4 py-2 bg-white/90 rounded-lg text-gray-700 hover:bg-cyan-500 hover:text-white transition-all text-sm font-medium">
+            <i className="fas fa-calendar-check mr-2"></i>Akademik Takvim
+          </a>
+          <a href="/upload" className="px-4 py-2 bg-cyan-500 rounded-lg text-white text-sm font-medium">
+            <i className="fas fa-cloud-upload-alt mr-2"></i>Ödev Yükle
+          </a>
+        </div>
+        
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
             <i className="fas fa-cloud-upload-alt text-5xl text-cyan-500 mb-4"></i>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Dosya Yükleme</h1>
-            <p className="text-gray-600">Güvenli dosya yükleme servisi</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Ödev Yükleme Sistemi</h1>
+            <p className="text-gray-600">Demo Bakırçay Üniversitesi - Öğrenci Ödev Portalı</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -71,10 +90,10 @@ const UploadPage = () => {
               >
                 <i className="fas fa-file-upload text-4xl text-gray-400 mb-4"></i>
                 <span className="text-gray-600 font-medium mb-2">
-                  Dosya seçmek için tıklayın
+                  Ödev dosyanızı seçmek için tıklayın
                 </span>
                 <span className="text-sm text-gray-400">
-                  veya sürükleyip bırakın
+                  PDF, DOC, DOCX formatları kabul edilir
                 </span>
               </label>
             </div>
@@ -112,7 +131,7 @@ const UploadPage = () => {
                   <div>
                     <p className="text-yellow-800 font-medium">Şüpheli dosya tespit edildi!</p>
                     <p className="text-yellow-700 text-sm mt-1">
-                      Bu dosya tipi güvenlik riski oluşturabilir.
+                      Bu dosya tipi ödev yükleme için uygun değildir. Lütfen PDF, DOC veya DOCX formatında bir dosya yükleyin.
                     </p>
                   </div>
                 </div>
@@ -124,7 +143,10 @@ const UploadPage = () => {
                 <div className="flex items-start gap-3">
                   <i className="fas fa-check-circle text-green-500 text-lg mt-0.5"></i>
                   <div>
-                    <p className="text-green-800 font-medium">Dosya başarıyla yüklendi!</p>
+                    <p className="text-green-800 font-medium">Ödev dosyanız başarıyla yüklendi!</p>
+                    <p className="text-green-700 text-sm mt-1">
+                      Ödev değerlendirme sonuçları e-posta adresinize gönderilecektir.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -136,7 +158,7 @@ const UploadPage = () => {
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <i className="fas fa-upload"></i>
-              <span>Yükle</span>
+              <span>Ödevi Yükle</span>
             </button>
           </form>
 
