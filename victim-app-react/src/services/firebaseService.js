@@ -80,8 +80,13 @@ export const createAlarm = async (alarmData) => {
 
 /**
  * Login event'ini Firebase'e kaydeder
+ * @param {string} username - Kullanıcı adı/email
+ * @param {boolean} success - Giriş başarılı mı?
+ * @param {string} eventType - Event tipi (LOGIN_SUCCESS, AUTH_FAIL, SQL_INJECTION, BRUTE_FORCE)
+ * @param {string} severity - Önem seviyesi (low, medium, high, critical)
+ * @param {Object} geoData - Coğrafi bilgiler {country, countryCode, ip, city, region}
  */
-export const logLoginEvent = async (username, success, eventType, severity) => {
+export const logLoginEvent = async (username, success, eventType, severity, geoData = {}) => {
   // Event başlığını belirle
   let title = success 
     ? `Başarılı giriş: ${username}`
@@ -97,10 +102,16 @@ export const logLoginEvent = async (username, success, eventType, severity) => {
     title: title,
     severity: severity,
     category: 'Auth',
-    sourceIP: '127.0.0.1', // Client-side'da gerçek IP almak zor
+    sourceIP: geoData.ip || '127.0.0.1',
     destIP: window.location.hostname,
     username: username,
     success: success,
+    country: geoData.country || 'Unknown',
+    countryCode: geoData.countryCode || 'XX',
+    city: geoData.city || 'Unknown',
+    region: geoData.region || 'Unknown',
+    latitude: geoData.latitude || null,
+    longitude: geoData.longitude || null,
     timestamp: new Date().toLocaleTimeString('tr-TR'),
   };
 
@@ -116,7 +127,9 @@ export const logLoginEvent = async (username, success, eventType, severity) => {
         : `Brute Force Saldırısı Tespit Edildi`,
       description: title,
       severity: severity,
-      sourceIP: '127.0.0.1',
+      sourceIP: geoData.ip || '127.0.0.1',
+      country: geoData.country || 'Unknown',
+      countryCode: geoData.countryCode || 'XX',
     });
   }
   

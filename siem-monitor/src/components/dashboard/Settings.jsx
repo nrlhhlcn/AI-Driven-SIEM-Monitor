@@ -68,6 +68,17 @@ const DEFAULT_RULES = [
     isActive: true,
     isDefault: true
   },
+  { 
+    id: 'suspicious-country',
+    name: 'Şüpheli Ülke Tespiti', 
+    description: 'Tanımlı olmayan ülkelerden (Türkiye, Almanya dışı) giriş denemelerini tespit et.',
+    eventType: 'LOGIN_SUCCESS',
+    allowedCountries: ['Turkey', 'Germany', 'TR', 'DE', 'Türkiye', 'Almanya'],
+    action: 'alert',
+    severity: 'high',
+    isActive: true,
+    isDefault: true
+  },
 ];
 
 const Settings = () => {

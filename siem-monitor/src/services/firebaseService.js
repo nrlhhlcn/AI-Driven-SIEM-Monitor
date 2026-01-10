@@ -641,6 +641,56 @@ export const detectAPIAbuse = (events, config = {}) => {
 };
 
 /**
+ * Şüpheli Ülke Tespiti
+ * Tanımlı olmayan ülkelerden giriş denemelerini tespit eder
+ * @param {Array} events - Event listesi
+ * @param {Object} config - { allowedCountries: string[], severity: string }
+ */
+export const detectSuspiciousCountry = (events, config = {}) => {
+  if (!events || !Array.isArray(events)) {
+    return [];
+  }
+  
+  // Varsayılan izin verilen ülkeler (Türkiye, Almanya)
+  const allowedCountries = config.allowedCountries || ['Turkey', 'Germany', 'TR', 'DE', 'Türkiye', 'Almanya'];
+  const severity = config.severity || 'high';
+  
+  const suspiciousLogins = [];
+  
+  events.forEach(event => {
+    // Sadece login eventlerini kontrol et
+    if (!['LOGIN_SUCCESS', 'AUTH_FAIL'].includes(event.type)) return;
+    if (!event.country && !event.countryCode) return; // Ülke bilgisi yoksa atla
+    
+    const country = event.country || 'Unknown';
+    const countryCode = event.countryCode || 'XX';
+    
+    // İzin verilen ülkeler listesinde değilse şüpheli
+    const isAllowed = allowedCountries.some(allowed => {
+      const allowedLower = allowed.toLowerCase();
+      return allowedLower === country.toLowerCase() || 
+             allowedLower === countryCode.toLowerCase();
+    });
+    
+    if (!isAllowed && country !== 'Unknown' && countryCode !== 'XX') {
+      suspiciousLogins.push({
+        type: 'SUSPICIOUS_COUNTRY',
+        username: event.username || 'Bilinmiyor',
+        country: country,
+        countryCode: countryCode,
+        ip: event.sourceIP || '127.0.0.1',
+        city: event.city || 'Unknown',
+        time: getEventDate(event),
+        severity: severity,
+        message: `Şüpheli ülkeden giriş denemesi: ${country} (${countryCode}) - ${event.username || 'Bilinmiyor'} kullanıcısı`
+      });
+    }
+  });
+  
+  return suspiciousLogins;
+};
+
+/**
  * Tüm anormallikleri tespit et
  */
 /**
@@ -658,6 +708,7 @@ export const detectAllAnomalies = (events, rules = []) => {
       trafficSpike: [],
       geoAnomaly: [],
       apiAbuse: [],
+      suspiciousCountry: [],
     };
   }
   
@@ -668,6 +719,7 @@ export const detectAllAnomalies = (events, rules = []) => {
   const trafficSpikeRule = rules.find(r => r.id === 'traffic-spike' && r.isActive);
   const geoAnomalyRule = rules.find(r => r.id === 'geo-anomaly' && r.isActive);
   const apiRateLimitRule = rules.find(r => r.id === 'api-rate-limit' && r.isActive);
+  const suspiciousCountryRule = rules.find(r => r.id === 'suspicious-country' && r.isActive);
   
   return {
     bruteForce: bruteForceRule ? detectBruteForce(events, bruteForceRule) : [],
@@ -676,6 +728,7 @@ export const detectAllAnomalies = (events, rules = []) => {
     trafficSpike: trafficSpikeRule ? detectTrafficSpike(events, trafficSpikeRule) : [],
     geoAnomaly: geoAnomalyRule ? detectGeoAnomaly(events, geoAnomalyRule) : [],
     apiAbuse: apiRateLimitRule ? detectAPIAbuse(events, apiRateLimitRule) : [],
+    suspiciousCountry: suspiciousCountryRule ? detectSuspiciousCountry(events, suspiciousCountryRule) : [],
   };
 };
 

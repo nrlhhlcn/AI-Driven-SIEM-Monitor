@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { logLoginEvent, saveEventToFirebase } from '../services/firebaseService';
+import { getCountryFromIP } from '../services/geolocationService';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +10,19 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedTestCountry, setSelectedTestCountry] = useState('');
+  
+  // Test ülkeleri listesi
+  const testCountries = [
+    { name: 'Türkiye', code: 'TR', flag: '🇹🇷' },
+    { name: 'Almanya', code: 'DE', flag: '🇩🇪' },
+    { name: 'Amerika', code: 'US', flag: '🇺🇸' },
+    { name: 'Çin', code: 'CN', flag: '🇨🇳' },
+    { name: 'Rusya', code: 'RU', flag: '🇷🇺' },
+    { name: 'Fransa', code: 'FR', flag: '🇫🇷' },
+    { name: 'İngiltere', code: 'GB', flag: '🇬🇧' },
+    { name: 'Singapur', code: 'SG', flag: '🇸🇬' },
+  ];
 
   // Sayfa ziyareti logu - sadece bir kez çalışsın
   useEffect(() => {
@@ -28,7 +42,19 @@ const LoginPage = () => {
       });
       sessionStorage.setItem('loginPageVisited', 'true');
     }
+    
+    // localStorage'dan test ülkesi kontrolü
+    const savedCountry = localStorage.getItem('testCountry');
+    if (savedCountry) {
+      setSelectedTestCountry(savedCountry);
+    }
   }, []);
+  
+  // Test ülkesi seçildiğinde localStorage'a kaydet
+  const handleCountrySelect = (countryName) => {
+    setSelectedTestCountry(countryName);
+    localStorage.setItem('testCountry', countryName);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,13 +62,23 @@ const LoginPage = () => {
     setSuccess('');
     setLoading(true);
 
+    // Ülke bilgisini al (tüm login denemeleri için)
+    // getCountryFromIP fonksiyonu localStorage'dan test ülkesini otomatik okuyor
+    const geoData = await getCountryFromIP().catch(() => ({
+      country: 'Unknown',
+      countryCode: 'XX',
+      ip: '127.0.0.1',
+      city: 'Unknown',
+      region: 'Unknown'
+    }));
+
     // SQL Injection tespiti
     const sqlPatterns = [/'/g, /OR\s+1\s*=\s*1/gi, /UNION/gi, /SELECT/gi, /DROP/gi];
     const hasSQLInjection = sqlPatterns.some(pattern => pattern.test(email) || pattern.test(password));
     
     if (hasSQLInjection) {
-      // Firebase'e SQL Injection kaydet
-      await logLoginEvent(email, false, 'SQL_INJECTION', 'critical').catch(err => {
+      // Firebase'e SQL Injection kaydet (ülke bilgisi ile)
+      await logLoginEvent(email, false, 'SQL_INJECTION', 'critical', geoData).catch(err => {
         // Sessizce geç
       });
       setError('Güvenlik ihlali tespit edildi!');
@@ -52,8 +88,8 @@ const LoginPage = () => {
 
     // Brute Force tespiti - 'root' kullanıcısına özel
     if (email.toLowerCase().includes('root')) {
-      // Firebase'e Brute Force kaydet
-      await logLoginEvent(email, false, 'BRUTE_FORCE', 'high').catch(err => {
+      // Firebase'e Brute Force kaydet (ülke bilgisi ile)
+      await logLoginEvent(email, false, 'BRUTE_FORCE', 'high', geoData).catch(err => {
         // Sessizce geç
       });
       setError('Bu kullanıcı adına erişim yasak!');
@@ -66,8 +102,8 @@ const LoginPage = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Başarılı giriş - Firebase'e kaydet
-      await logLoginEvent(email, true, 'LOGIN_SUCCESS', 'low').catch(err => {
+      // Başarılı giriş - Firebase'e kaydet (ülke bilgisi ile)
+      await logLoginEvent(email, true, 'LOGIN_SUCCESS', 'low', geoData).catch(err => {
         // Sessizce geç
       });
       
@@ -96,8 +132,8 @@ const LoginPage = () => {
         errorMessage = 'Çok fazla başarısız deneme! Lütfen daha sonra tekrar deneyin.';
       }
       
-      // Firebase'e başarısız giriş kaydet
-      await logLoginEvent(email, false, 'AUTH_FAIL', 'medium').catch(err => {
+      // Firebase'e başarısız giriş kaydet (ülke bilgisi ile)
+      await logLoginEvent(email, false, 'AUTH_FAIL', 'medium', geoData).catch(err => {
         // Sessizce geç
       });
       
@@ -106,7 +142,53 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative">
+      {/* SAĞ ÜST KÖŞE - ÜLKE SEÇİCİ (Sadece Development Modunda) */}
+      {import.meta.env.DEV && (
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-white/20 z-50">
+          <div className="flex items-center gap-2 mb-2">
+            <i className="fas fa-globe text-cyan-600"></i>
+            <span className="text-xs font-semibold text-gray-700">Test Ülkesi:</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {testCountries.map((country) => (
+              <button
+                key={country.code}
+                onClick={() => handleCountrySelect(country.name)}
+                className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                  selectedTestCountry === country.name
+                    ? 'bg-cyan-500 text-white shadow-md scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                title={country.name}
+              >
+                <span className="mr-1">{country.flag}</span>
+                {country.code}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                setSelectedTestCountry('');
+                localStorage.removeItem('testCountry');
+              }}
+              className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                !selectedTestCountry
+                  ? 'bg-green-500 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="Gerçek IP Kullan"
+            >
+              🌐 Gerçek
+            </button>
+          </div>
+          {selectedTestCountry && (
+            <div className="mt-2 text-xs text-cyan-600 font-medium">
+              ✓ {selectedTestCountry} seçildi
+            </div>
+          )}
+        </div>
+      )}
+      
       <div className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl w-full max-w-md shadow-2xl border border-white/20">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
@@ -205,6 +287,12 @@ const LoginPage = () => {
               <li>• ' OR '1'='1</li>
               <li>• admin' UNION SELECT --</li>
               <li>• '; DROP TABLE users; --</li>
+            </ul>
+            <p className="font-semibold mb-2 mt-3 text-orange-600">🌍 Ülke Test:</p>
+            <ul className="space-y-1 text-left text-orange-500 text-xs">
+              <li>• Sağ üstteki butonlardan ülke seç</li>
+              <li>• VPN kullanıldığında otomatik algılanır</li>
+              <li>• "Gerçek" butonu ile gerçek IP kullanılır</li>
             </ul>
           </div>
         </div>

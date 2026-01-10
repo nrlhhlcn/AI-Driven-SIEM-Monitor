@@ -32,7 +32,8 @@ const Dashboard = () => {
     sqlInjection: [],
     trafficSpike: [],
     geoAnomaly: [],
-    apiAbuse: []
+    apiAbuse: [],
+    suspiciousCountry: []
   });
   const [aiRecommendations, setAIRecommendations] = useState({
     thresholds: [],
@@ -118,6 +119,20 @@ const Dashboard = () => {
         createBruteForceAlarm(detection.ip, detection.attempts).catch(() => {});
       });
 
+      // Şüpheli Ülke için alarm oluştur
+      anomalies.suspiciousCountry.forEach(detection => {
+        createAlarm({
+          type: 'SUSPICIOUS_COUNTRY',
+          title: `Şüpheli Ülkeden Giriş: ${detection.country}`,
+          description: detection.message,
+          severity: detection.severity || 'high',
+          sourceIP: detection.ip,
+          country: detection.country,
+          countryCode: detection.countryCode,
+          username: detection.username,
+        }).catch(() => {});
+      });
+
       // NOT: SQL Injection alarmları victim-app tarafından oluşturuluyor
       // Dashboard sadece tespit ve gösterim yapar, çift kayıt önlenir
 
@@ -156,7 +171,8 @@ const Dashboard = () => {
     allAlerts.sqlInjection.length +
     allAlerts.trafficSpike.length +
     allAlerts.geoAnomaly.length +
-    allAlerts.apiAbuse.length;
+    allAlerts.apiAbuse.length +
+    allAlerts.suspiciousCountry.length;
 
   // AI öneri sayısını hesapla
   const totalRecommendations = 
@@ -381,6 +397,19 @@ const Dashboard = () => {
               icon={Activity}
               color="border-l-cyan-500"
               bgColor="bg-cyan-500/10"
+            />
+          ))}
+          
+          {/* Suspicious Country */}
+          {allAlerts.suspiciousCountry.map((alert, i) => (
+            <AlertCard 
+              key={`country-${i}`}
+              alert={alert}
+              type="suspiciousCountry"
+              index={i}
+              icon={Globe}
+              color="border-l-red-500"
+              bgColor="bg-red-500/10"
             />
           ))}
         </div>

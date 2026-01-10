@@ -35,3 +35,5 @@ coverage
 # Firebase
 .firebase
 firebase-debug.log
+
+TEST_SUMMARY.md
