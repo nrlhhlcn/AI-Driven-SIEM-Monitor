@@ -2,7 +2,7 @@
 
 **Proje #3: Event-Driven Akıllı Bildirim ve İzleme Sistemi**
 
-Bu proje, BİL440 YZ Destekli Yazılım Geliştirme dersi final projesi kapsamında geliştirilmiştir. Sistem, olay tabanlı (event-driven) bir mimari ile çalışan, yapay zeka destekli güvenlik izleme ve bildirim sistemidir.
+Bu proje, Sistem, olay tabanlı (event-driven) bir mimari ile çalışan, yapay zeka destekli güvenlik izleme ve bildirim sistemidir.
 
 ## 🎯 Proje Özeti
 
@@ -454,13 +454,6 @@ Bu proje eğitim amaçlı geliştirilmiştir.
 - [Tailwind CSS Documentation](https://tailwindcss.com)
 - [Recharts Documentation](https://recharts.org)
 
-## 📞 Destek
 
-Proje hakkında sorularınız için:
-- Firebase kurulumu için `FIREBASE_SETUP.md` dosyasına bakınız
-- Test çalıştırma için `TEST_SUMMARY.md` dosyasına bakınız
-- Victim app kullanımı için `victim-app-react/README.md` dosyasına bakınız
-
----
 
 **Not**: Bu proje, yapay zeka kod asistanları kullanılarak geliştirilmiştir. Detaylı AI kullanım logu ve karar süreçleri teknik raporda belgelenmiştir.
