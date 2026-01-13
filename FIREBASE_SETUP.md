@@ -42,6 +42,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
+    // SIEM AI Analyses - Yapay zeka analizleri
+    match /siem_ai_analyses/{analysisId} {
+      allow read, write: if true;
+    }
+    
     // Diğer collection'lar için varsayılan kural
     match /{document=**} {
       allow read, write: if false;

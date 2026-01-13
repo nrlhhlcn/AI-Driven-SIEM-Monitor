@@ -8,6 +8,7 @@ import ThreatMap from './components/threats/ThreatMap';
 import Settings from './components/dashboard/Settings';
 import AlarmHistory from './components/alarms/AlarmHistory';
 import AlarmModal from './components/alarms/AlarmModal';
+import AIAnalysis from './components/ai/AIAnalysis';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -36,7 +37,9 @@ function App() {
           
           {/* Sayfa Başlığı */}
           <h2 className="text-2xl font-semibold capitalize tracking-tight">
-            {activeTab === 'dashboard' ? 'Güvenlik Paneli' : activeTab}
+            {activeTab === 'dashboard' ? 'Güvenlik Paneli' : 
+             activeTab === 'ai' ? 'Yapay Zeka Analizi' : 
+             activeTab}
           </h2>
 
           {/* Sağ Araçlar */}
@@ -67,6 +70,7 @@ function App() {
           {activeTab === 'logs' && <LiveLogs />}
           {activeTab === 'threats' && <ThreatMap />}
           {activeTab === 'alarms' && <AlarmHistory />}
+          {activeTab === 'ai' && <AIAnalysis />}
           {activeTab === 'settings' && <Settings />}
           
           {/* Diğer sekmeler için geçici yer tutucu */}
@@ -74,6 +78,7 @@ function App() {
             activeTab !== 'logs' &&
             activeTab !== 'threats' &&
             activeTab !== 'alarms' &&
+            activeTab !== 'ai' &&
             activeTab !== 'settings' && (
             <div className="border-2 border-dashed border-siem-border rounded-2xl h-full flex items-center justify-center text-gray-500 animate-pulse">
               {activeTab.toUpperCase()} MODÜLÜ GELİŞTİRİLİYOR...

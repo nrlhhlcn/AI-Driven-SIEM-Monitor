@@ -23,6 +23,7 @@ const COLLECTIONS = {
   ALARMS: 'siem_alarms',
   THREAT_INTELLIGENCE: 'siem_threat_intelligence',
   USER_STATS: 'siem_user_stats',
+  AI_ANALYSES: 'siem_ai_analyses',
 };
 
 /**
@@ -1145,6 +1146,87 @@ export const getRuleById = async (ruleId) => {
     console.error('Kural getirme hatası:', error);
     return null;
   }
+};
+
+// ============================================
+// AI ANALİZ YÖNETİMİ
+// ============================================
+
+/**
+ * AI analiz sonucunu Firebase'e kaydet
+ */
+export const saveAIAnalysis = async (analysisData) => {
+  try {
+    // Timestamp'i düzelt - eğer Date objesi ise Timestamp'e çevir
+    const timestamp = analysisData.timestamp 
+      ? (analysisData.timestamp instanceof Date 
+          ? Timestamp.fromDate(analysisData.timestamp) 
+          : analysisData.timestamp)
+      : Timestamp.now();
+
+    const dataToSave = {
+      ...analysisData,
+      timestamp: timestamp,
+      createdAt: Timestamp.now(),
+    };
+
+    console.log('💾 AI analiz kaydediliyor...', { 
+      collection: COLLECTIONS.AI_ANALYSES,
+      data: dataToSave 
+    });
+
+    const docRef = await addDoc(collection(db, COLLECTIONS.AI_ANALYSES), dataToSave);
+    console.log('✅ AI analiz başarıyla kaydedildi:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ AI analiz kaydetme hatası:', error);
+    console.error('Hata detayları:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    throw error;
+  }
+};
+
+/**
+ * Son AI analizlerini getir
+ */
+export const getRecentAIAnalyses = async (count = 10) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.AI_ANALYSES),
+      orderBy('createdAt', 'desc'),
+      limit(count)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('AI analiz getirme hatası:', error);
+    throw error;
+  }
+};
+
+/**
+ * Real-time AI analiz dinleyicisi
+ */
+export const subscribeToAIAnalyses = (callback, count = 10) => {
+  const q = query(
+    collection(db, COLLECTIONS.AI_ANALYSES),
+    orderBy('createdAt', 'desc'),
+    limit(count)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const analyses = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    callback(analyses);
+  });
 };
 
 export { COLLECTIONS };

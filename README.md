@@ -340,6 +340,58 @@ Proje geliştirme sürecinde AI araçlarından alınan öneriler değerlendirilm
 
 Detaylı AI karar tablosu için sunum dokümanlarına bakınız.
 
+### AI Yanlış Çıktı Örnekleri
+
+Bu bölüm, proje geliştirme sürecinde tespit edilen ve düzeltilen AI hatalarını belgelemektedir. Bu örnekler, AI'ın yanıltıcı olabileceği durumları ve insan müdahalesinin kritik önemini göstermektedir.
+
+#### Örnek 1: Gemini API Event Type Yanlış Yorumlaması
+
+**Sorun:**
+- Gemini API, VPN ile giriş yapıldığında oluşan `GEO_ANOMALY` ve `SUSPICIOUS_COUNTRY` event'lerini "başarısız giriş denemesi" olarak yorumluyordu.
+- Oysa bu event'ler coğrafi anomali/şüpheli ülke kategorisinde, başarısız giriş değil.
+- Bu yanlış yorumlama, güvenlik analizinin yanlış kategorize edilmesine neden oluyordu.
+
+**Tespit:**
+- Test sırasında VPN ile giriş yapıldığında Gemini'nin analiz sonucu yanlış kategorize edildi.
+- Kullanıcı geri bildirimi ile tespit edildi: "VPN ile giriş yapmayı denedim alert olarak geldi ama yapay zeka ile analiz ettiğimde bunu başarısız bir giriş denemesi olarak aldı."
+
+**Kök Neden:**
+- Gemini API'ye gönderilen prompt'ta event type'larının anlamları açıkça belirtilmemişti.
+- AI, event type'larını görünce context'i tam anlamadan yorumlama yapıyordu.
+- `GEO_ANOMALY` ve `SUSPICIOUS_COUNTRY` event'leri ile `AUTH_FAIL` event'leri arasındaki fark net değildi.
+
+**Çözüm:**
+- Prompt'a detaylı event type açıklamaları eklendi (`geminiService.js` satır 135-145).
+- Analiz talimatları detaylandırıldı (satır 163-167).
+- Event type'larının anlamları ve kategorileri açıkça belirtildi.
+- Özel talimatlar eklendi: "Coğrafi anomaliler ile başarısız giriş denemelerini karıştırma."
+
+**Ders:**
+- AI modelleri context'i tam anlamadan yorumlama yapabilir.
+- Prompt engineering kritik öneme sahip; her detay açıkça belirtilmelidir.
+- Her AI çıktısı doğrulanmalı ve test edilmelidir.
+- Kullanıcı geri bildirimleri AI hatalarını tespit etmede önemlidir.
+
+**Kod Değişikliği:**
+```javascript
+// geminiService.js - Önceki prompt (eksik)
+"Son 5 dakikadaki güvenlik olaylarını analiz et..."
+
+// geminiService.js - Yeni prompt (düzeltilmiş)
+"**ÖNEMLİ: EVENT TYPE AÇIKLAMALARI:**
+- GEO_ANOMALY: Coğrafi anomali - VPN kullanımı veya hesap ele geçirme işareti
+- SUSPICIOUS_COUNTRY: Şüpheli ülkeden giriş - VPN veya gerçek tehdit
+...
+**ANALİZ TALİMATLARI:**
+1. Event type'larına dikkat et: GEO_ANOMALY ve SUSPICIOUS_COUNTRY 
+   coğrafi anomali/şüpheli ülke anlamına gelir, başarısız giriş değil"
+```
+
+**Sonuç:**
+- Düzeltme sonrası Gemini API, coğrafi anomalileri doğru kategorize ediyor.
+- VPN ile giriş yapıldığında "coğrafi anomali" olarak yorumlanıyor, "başarısız giriş" değil.
+- Bu örnek, AI'ın yanıltıcı olabileceği durumları ve prompt engineering'in önemini göstermektedir.
+
 ### Commit Etiketleri
 
 - `[AI-generated]`: Tamamen AI tarafından üretilen kod
