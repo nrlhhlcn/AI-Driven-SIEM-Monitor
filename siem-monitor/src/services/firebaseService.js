@@ -11,8 +11,7 @@ import {
   where,
   onSnapshot,
   Timestamp,
-  deleteDoc,
-  writeBatch
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -83,68 +82,6 @@ export const subscribeToEvents = (callback, count = 50) => {
   });
 };
 
-/**
- * Tüm eventleri sil (Firebase'den)
- */
-export const deleteAllEvents = async () => {
-  try {
-    // Tüm eventleri getir
-    const q = query(collection(db, COLLECTIONS.EVENTS));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      console.log('Silinecek event yok');
-      return true;
-    }
-    
-    // Batch delete (500'e kadar - Firestore limiti)
-    const batch = writeBatch(db);
-    let count = 0;
-    const maxBatchSize = 500;
-    
-    querySnapshot.docs.forEach((document) => {
-      if (count < maxBatchSize) {
-        batch.delete(doc(db, COLLECTIONS.EVENTS, document.id));
-        count++;
-      }
-    });
-    
-    await batch.commit();
-    console.log(`✅ ${count} event silindi`);
-    
-    // Eğer 500'den fazla event varsa, tekrar çağır
-    if (querySnapshot.docs.length > maxBatchSize) {
-      return await deleteAllEvents();
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Event silme hatası:', error);
-    return false;
-  }
-};
-
-/**
- * Severity'ye göre event filtreleme
- */
-export const getEventsBySeverity = async (severity) => {
-  try {
-    const q = query(
-      collection(db, COLLECTIONS.EVENTS),
-      where('severity', '==', severity),
-      orderBy('createdAt', 'desc'),
-      limit(100)
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('Event filtreleme hatası:', error);
-    throw error;
-  }
-};
 
 /**
  * Yeni alarm ekler
@@ -163,72 +100,6 @@ export const addAlarm = async (alarmData) => {
   }
 };
 
-/**
- * Threat intelligence kaydı ekler/günceller
- */
-export const updateThreatIntelligence = async (ipData) => {
-  try {
-    // IP'ye göre mevcut kaydı kontrol et
-    const q = query(
-      collection(db, COLLECTIONS.THREAT_INTELLIGENCE),
-      where('sourceIP', '==', ipData.sourceIP)
-    );
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      // Yeni kayıt
-      await addDoc(collection(db, COLLECTIONS.THREAT_INTELLIGENCE), {
-        ...ipData,
-        attackCount: 1,
-        lastSeen: Timestamp.now(),
-      });
-    } else {
-      // Mevcut kaydı güncelle (bu örnekte sadece ekleme yapıyoruz)
-      // Güncelleme için updateDoc kullanılabilir
-      console.log('IP zaten kayıtlı:', ipData.sourceIP);
-    }
-  } catch (error) {
-    console.error('Threat intelligence hatası:', error);
-    throw error;
-  }
-};
-
-/**
- * Kullanıcı istatistiklerini getirir
- */
-export const getUserStats = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.USER_STATS));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      username: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('Kullanıcı istatistikleri getirme hatası:', error);
-    throw error;
-  }
-};
-
-/**
- * Belirli bir kullanıcının istatistiklerini getirir
- */
-export const getUserStatByUsername = async (username) => {
-  try {
-    const userDoc = await getDoc(doc(db, COLLECTIONS.USER_STATS, username));
-    if (userDoc.exists()) {
-      return {
-        id: userDoc.id,
-        username: userDoc.id,
-        ...userDoc.data()
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error('Kullanıcı istatistiği getirme hatası:', error);
-    throw error;
-  }
-};
 
 /**
  * Real-time kullanıcı istatistikleri dinleyicisi
@@ -1026,22 +897,6 @@ export const createAlarm = async (alarmData) => {
 const RULES_COLLECTION = 'siem_detection_rules';
 
 /**
- * Tespit kurallarını getir
- */
-export const getDetectionRules = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, RULES_COLLECTION));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('Kural getirme hatası:', error);
-    return [];
-  }
-};
-
-/**
  * Real-time kural dinleyicisi
  */
 export const subscribeToRules = (callback) => {
@@ -1129,25 +984,6 @@ export const initializeDefaultRules = async (defaultRules) => {
   }
 };
 
-/**
- * Belirli bir kuralı ID ile getir
- */
-export const getRuleById = async (ruleId) => {
-  try {
-    const ruleDoc = await getDoc(doc(db, RULES_COLLECTION, ruleId));
-    if (ruleDoc.exists()) {
-      return {
-        id: ruleDoc.id,
-        ...ruleDoc.data()
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error('Kural getirme hatası:', error);
-    return null;
-  }
-};
-
 // ============================================
 // AI ANALİZ YÖNETİMİ
 // ============================================
@@ -1185,27 +1021,6 @@ export const saveAIAnalysis = async (analysisData) => {
       code: error.code,
       stack: error.stack
     });
-    throw error;
-  }
-};
-
-/**
- * Son AI analizlerini getir
- */
-export const getRecentAIAnalyses = async (count = 10) => {
-  try {
-    const q = query(
-      collection(db, COLLECTIONS.AI_ANALYSES),
-      orderBy('createdAt', 'desc'),
-      limit(count)
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('AI analiz getirme hatası:', error);
     throw error;
   }
 };

@@ -11,7 +11,7 @@ Bu doküman, SIEM Monitor projesi için yazılan unit testlerin özetini içerir
 #### `detectBruteForce` (6 test)
 - ✅ Eşik aşıldığında brute force tespiti
 - ✅ Eşik altında tespit yapılmaması
-- ✅ Zaman penceresi dışındaki eventlerin göz ardı edilmesi
+- ✅ Zaman penceresi dışındaki eventlerin göz ardı edilmesipe
 - ✅ Birden fazla IP adresi için ayrı tespit
 - ✅ Boş event dizisi için edge case
 - ✅ Geçersiz timestamp handling
