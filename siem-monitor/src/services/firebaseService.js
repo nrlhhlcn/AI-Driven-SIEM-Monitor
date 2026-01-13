@@ -22,9 +22,6 @@ const COLLECTIONS = {
   EVENTS: 'siem_events',
   ALARMS: 'siem_alarms',
   THREAT_INTELLIGENCE: 'siem_threat_intelligence',
-  NETWORK_TRAFFIC: 'siem_network_traffic',
-  SYSTEM_METRICS: 'siem_system_metrics',
-  IP_BLOCKS: 'siem_ip_blocks',
   USER_STATS: 'siem_user_stats',
 };
 
@@ -191,37 +188,6 @@ export const updateThreatIntelligence = async (ipData) => {
     }
   } catch (error) {
     console.error('Threat intelligence hatası:', error);
-    throw error;
-  }
-};
-
-/**
- * Sistem metrikleri ekler
- */
-export const addSystemMetrics = async (metrics) => {
-  try {
-    await addDoc(collection(db, COLLECTIONS.SYSTEM_METRICS), {
-      ...metrics,
-      timestamp: Timestamp.now(),
-    });
-  } catch (error) {
-    console.error('Sistem metrikleri ekleme hatası:', error);
-    throw error;
-  }
-};
-
-/**
- * IP engelleme ekler
- */
-export const blockIP = async (ipData) => {
-  try {
-    await addDoc(collection(db, COLLECTIONS.IP_BLOCKS), {
-      ...ipData,
-      isActive: true,
-      createdAt: Timestamp.now(),
-    });
-  } catch (error) {
-    console.error('IP engelleme hatası:', error);
     throw error;
   }
 };

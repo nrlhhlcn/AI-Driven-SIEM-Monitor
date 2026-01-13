@@ -17,21 +17,6 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
-    // SIEM Network Traffic
-    match /siem_network_traffic/{trafficId} {
-      allow read, write: if true;
-    }
-    
-    // SIEM System Metrics
-    match /siem_system_metrics/{metricId} {
-      allow read, write: if true;
-    }
-    
-    // SIEM IP Blocks
-    match /siem_ip_blocks/{blockId} {
-      allow read, write: if true;
-    }
-    
     // SIEM User Stats - Kullanıcı giriş istatistikleri
     match /siem_user_stats/{userId} {
       allow read, write: if true;
