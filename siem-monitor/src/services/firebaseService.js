@@ -11,7 +11,8 @@ import {
   where,
   onSnapshot,
   Timestamp,
-  deleteDoc
+  deleteDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -80,6 +81,50 @@ export const subscribeToEvents = (callback, count = 50) => {
     }));
     callback(events);
   });
+};
+
+/**
+ * Tüm event'leri sil (Firebase'den)
+ * Not: Firebase'de batch delete limiti 500, bu yüzden büyük collection'lar için birden fazla batch gerekebilir
+ */
+export const deleteAllEvents = async () => {
+  try {
+    console.log('🗑️ Tüm eventler siliniyor...');
+    
+    // Tüm event'leri getir (limit olmadan)
+    const eventsRef = collection(db, COLLECTIONS.EVENTS);
+    const snapshot = await getDocs(eventsRef);
+    
+    if (snapshot.empty) {
+      console.log('ℹ️ Silinecek event bulunamadı');
+      return true;
+    }
+    
+    // Batch delete (Firebase limit: 500 operations per batch)
+    const batchSize = 500;
+    const docs = snapshot.docs;
+    const totalBatches = Math.ceil(docs.length / batchSize);
+    
+    console.log(`📦 ${docs.length} event siliniyor (${totalBatches} batch)...`);
+    
+    for (let i = 0; i < docs.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchDocs = docs.slice(i, i + batchSize);
+      
+      batchDocs.forEach((docSnapshot) => {
+        batch.delete(docSnapshot.ref);
+      });
+      
+      await batch.commit();
+      console.log(`✅ Batch ${Math.floor(i / batchSize) + 1}/${totalBatches} tamamlandı`);
+    }
+    
+    console.log('✅ Tüm eventler başarıyla silindi');
+    return true;
+  } catch (error) {
+    console.error('❌ Event silme hatası:', error);
+    return false;
+  }
 };
 
 

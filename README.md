@@ -1,6 +1,6 @@
 # AI-Driven-SIEM-Monitor
 
-**Proje #3: Event-Driven Akıllı Bildirim ve İzleme Sistemi**
+**: Event-Driven Akıllı Bildirim ve İzleme Sistemi**
 
 Bu proje, Sistem, olay tabanlı (event-driven) bir mimari ile çalışan, yapay zeka destekli güvenlik izleme ve bildirim sistemidir.
 
@@ -430,10 +430,7 @@ AI-Driven-SIEM-Monitor/
 
 Bu proje eğitim amaçlı geliştirilmiştir.
 
-## 👥 Geliştiriciler
 
-- Final Proje - BİL440
-- 2025-26 Güz Dönemi
 
 ## 🚀 Gelecek Geliştirmeler
 
@@ -456,4 +453,3 @@ Bu proje eğitim amaçlı geliştirilmiştir.
 
 
 
-**Not**: Bu proje, yapay zeka kod asistanları kullanılarak geliştirilmiştir. Detaylı AI kullanım logu ve karar süreçleri teknik raporda belgelenmiştir.

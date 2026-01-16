@@ -523,6 +523,34 @@ const Settings = () => {
              </div>
           </div>
 
+          {/* LocalStorage Temizleme */}
+          <div className="bg-siem-card border border-siem-border rounded-xl p-6">
+             <div className="flex items-center gap-2 mb-4 text-white font-semibold">
+                <Database size={20} className="text-orange-400" />
+                Yerel Veri Yönetimi
+             </div>
+             
+             <div className="space-y-3">
+                <p className="text-xs text-gray-400">
+                  Tarayıcıda saklanan alarm ve alert verilerini temizleyin. Bu işlem sadece yerel verileri siler, Firebase'deki veriler etkilenmez.
+                </p>
+                <button
+                  onClick={() => {
+                    if (confirm('Yerel alarm ve alert verilerini temizlemek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+                      localStorage.removeItem('siem_dismissed_alerts');
+                      localStorage.removeItem('siem_seen_alarm_ids');
+                      alert('✅ Yerel veriler başarıyla temizlendi! Sayfa yenilenecek...');
+                      window.location.reload();
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 rounded-lg transition-all text-sm font-medium"
+                >
+                  <Trash2 size={18} />
+                  Yerel Alarm Verilerini Temizle
+                </button>
+             </div>
+          </div>
+
         </div>
       </div>
 
